@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<manifest identifier="RSECA_Manifest" version="1"
+       xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+       xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1"
+       xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                           http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                           http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="assima_courses">
+    <organization identifier="assima_courses" >
+		  <title><![CDATA[Zoom official lesson #4 (replica) - Evaluation]]></title>
+        <item identifier="item13871" identifierref="item_resource_13871" isvisible="true">
+                        <title><![CDATA[Zoom official lesson #4 (replica) - Evaluation]]></title>
+                        <metadata>
+                            <schema>ADL SCORM</schema>
+                            <schemaversion>1.2</schemaversion>
+                            <imsmd:lom xmlns="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ltsc.ieee.org/xsd/LOM lom.xsd">
+                                <imsmd:general>
+                                   <imsmd:description>
+                                     <imsmd:langstring language="x-none"><![CDATA[]]></imsmd:langstring>
+                                  </imsmd:description>
+                                </imsmd:general>
+                          </imsmd:lom>
+                        </metadata>
+                        <adlcp:masteryscore>50</adlcp:masteryscore>
+                    </item>
+
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="item_resource_13871" type="webcontent" adlcp:scormtype="sco" href="./index.htm">
+                           <file href="./index.htm"/>
+                         </resource>
+
+  </resources>
+</manifest>
