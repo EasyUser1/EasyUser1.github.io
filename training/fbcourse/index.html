@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name='viewport' content='initial-scale=1, maximum-scale=1' />
+
+    <title>FaceBook Combined 1-4</title>
+    
+
+
+
+
+
+
+
+<LINK rel='stylesheet' type='text/css' href='TemplatesAndThemes/24a7f94f-73c0-49c4-b8cb-6cc050043301_92_DCharronTheme_18_-1154154586_base67min/Templates/Course.css' >
+
+
+<LINK rel='stylesheet' type='text/css' href='TemplatesAndThemes/24a7f94f-73c0-49c4-b8cb-6cc050043301_92_DCharronTheme_18_-1154154586_base67min/Templates/style.css' >
+<SCRIPT type='text/javascript' language='JavaScript' src='TemplatesAndThemes/24a7f94f-73c0-49c4-b8cb-6cc050043301_92_DCharronTheme_18_-1154154586_base67min/Templates/combined.js' ></SCRIPT>
+
+
+</head>
+<body class="masterBody" id="mainBody" onload="Body_OnLoad();" onunload="Body_OnUnload();">
+<!-- View: not-started -->
+<div id="notStarted" class="view intermediate not-started" style="display:none">
+    
+    <div class="content">
+
+        <a id="start" href="#" onclick="Course.start(); return false;">
+            Click here to start the course
+        </a>
+
+    </div>
+
+</div>
+
+<!-- View: suspended -->
+<div id="suspended" class="view intermediate suspended" style="display:none">
+
+    <div class="content">
+        
+        <span class="label">The course is paused</span>
+        <br />
+        <div class="options">
+
+            <a id="resume" href="#" onclick="Course.resume(); return false;">
+                Click here to resume the course where you left it
+            </a>
+
+            <a id="restart" href="#" onclick="Course.start(); return false;">
+                Alternatively, click here to restart the course from the beginning
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- View: started -->
+<div id="started" class="view intermediate started" style="display:none">
+        
+    <div class="content">
+
+        <span class="label">The course has been launched in a new window</span>
+
+    </div>
+
+</div>
+
+<!-- View: saving -->
+<div id="saving" class="view intermediate saving" style="display:none">
+        
+    <div class="content">
+
+        <span class="label">Saving</span>
+
+    </div>
+
+</div>
+
+<!-- View: finished -->
+<div id="finished" class="view intermediate finished" style="display:none">
+        
+    <div class="content">
+
+        <span class="label">The course has ended.</span>
+
+    </div>
+
+</div>
+
+<!-- View: loading -->
+<div id="loading" class="view intermediate loading">
+
+    <div class="content">
+        
+        <span class="label">Loading</span>
+
+    </div>
+</div>
+
+<!-- View: running -->
+<div id="running" class="view running has-toc focus-on-content" style="display:none">
+
+    <!-- Header -->
+    <div id="header" class="bar header">
+
+        <!-- Company logo -->
+        <img src="TemplatesAndThemes/24a7f94f-73c0-49c4-b8cb-6cc050043301_92_DCharronTheme_18_-1154154586_base67min/Themes/Global/larger logo-637632752648170533.png" id="logo" />
+
+        <!-- Course title -->
+        <span id="courseTitle"></span>
+
+        <ol id="breadcrumb" class="bar breadcrumb">
+            <!-- items built dynamically
+            <li class="item">Playing the Game</li>
+            <li class="item">How to Play</li>-->
+        </ol>
+    </div>
+
+    <div id="mainContent" data-splitter-pos="340">
+
+        <!-- Course item -->
+        <div id="courseItemWindow">
+
+            <div id="courseItemFrameContainer">
+                <iframe id="courseItemFrame" src="about:blank" frameborder="0" class="hidden" allowfullscreen="true"></iframe>
+            </div>
+
+            <!-- Course item description -->
+            <div id="courseItemDescription" style="display: none">
+
+                <div class="content">
+                    <h3 id="titleItem"></h3>
+
+                    <p id="courseItemDescriptionStatus" class="nostatus"></p>
+
+                    <div class="openline">
+                        <a href="#" id="openCourseItemButton" class="action_button">Open</a>
+                        <span id="attemptLimitInfo"></span>
+                    </div>
+
+                    <div id="courseItemInfo">
+                        <p id="courseItemDescriptionText">This item has no description</p>
+                        <iframe id="courseItemDescriptionFrame" src="about:blank" frameborder="0" style="display: none"></iframe>
+                    </div>
+                </div>
+
+                <span id="descriptionCloser"></span>
+            </div>
+
+            <div id="messageUser" class="visible">
+                <h3 id="messageUserTitle">No item selected</h3>
+                <p id="messageUserText">Please select an item in the table of contents.</p>
+            </div>
+
+            <!-- Course end progress screen -->
+            <div id="courseEndProgressScreen" style="display: none">
+                <h3 id="courseProgressTitle"></h3>
+
+                <p id="courseProgressIntro"></p>
+                <p id="courseProgressText">The course is now {0} complete</p>
+
+                <div id="courseProgressFigure">
+                    <span id="courseProgressPercentage"></span>
+                    <span id="courseProgressBar">
+                        <span id="courseProgressLevel">
+                            <span id="courseProgressFill"></span>
+                        </span>
+                    </span>
+                </div>
+
+                <p id="courseProgressEndText"></p>
+
+                <a href="#" class="exit action_button">Exit</a>
+
+            </div>
+
+            <div id="glassPane" style="display: none"></div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div id="tableOfContents" class="pane">
+
+            <div id="tableOfContentsTree" class="content">
+                <ol id="courseTree">
+                    <!-- Course structure built dynamically !-->
+                </ol>
+            </div>
+
+            <!-- Splitter -->
+            <div id="tableOfContentsSplitter">
+                <span class="top"></span>
+                <span class="splitter"></span>
+                <span class="bottom"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation bar -->
+    <div id="navigationBar" class="bar navigation">
+
+        <!-- Button table of contents -->
+        <a href="#" id="tableOfContentsButton" class="button table_of_contents" title="Table of contents"><span class="label">Table of contents</span></a>
+
+        <!-- Progress -->
+        <div id="progress">
+
+            <span id="progressBar">
+                <span id="progressLevel"></span>
+            </span>
+            <span id="progressNumber">0%</span>
+        </div>
+
+        <!-- Previous and next arrows -->
+        <a href="#" id="previousButton" class="button previous disabled" title="Previous item"><span class="label">Previous item</span></a>
+        <a href="#" id="nextButton" class="button next" title="Next item"><span class="label">Next item</span></a>
+
+    </div>
+
+    <!-- Course end score screen -->
+    <div id="courseEndScoreScreen" style="display: none">
+        <div class="content">
+            <h3 id="courseScoreTitle"></h3>
+
+            <p id="courseScoreIntroText" class="status"></p>
+
+            <div id="courseScoreBody">
+                <div id="courseScoreIcon"></div>
+
+                <div class="score text">
+                    <div id="userScoreText" class="score" style="display: none">
+                        <span class="label">your score</span><span id="userScorePercentage" class="percentage"></span>
+                    </div>
+                    <div id="scoreBars" class="score bars" style="display: none">
+                        <span id="userScoreBar" class="bar"></span>
+                        <span id="separatorScoreBar" class="bar"></span>
+                        <span id="requiredScoreBar" class="bar"></span>
+                    </div>
+                    <div id="requiredScoreText" class="score" style="display: none">
+                        <span id="requiredScorePercentage" class="percentage"></span>
+                        <span class="label"> required</span>
+                    </div>
+
+                    <a href="#" id="courseCertificate" onclick="Course.OpenCertificate();" style="display: none">print certificate</a>
+                </div>
+            </div>
+
+            <p id="courseScoreEndText"></p>
+
+            <a href="#" class="exit action_button">Exit</a>
+        </div>
+    </div>
+
+
+</div>
+
+<!-- Additional includes -->
+<script src="Files/jsManifest.js"></script>
+<script src="Files/trackingManager.js"></script>
+<script src="Files/scorm2004RTE.js"></script>
+<script>
+
+    var TEMPLATE_PATH = "TemplatesAndThemes/24a7f94f-73c0-49c4-b8cb-6cc050043301_92_DCharronTheme_18_-1154154586_base67min/Templates";
+
+</script>
+
+<script type="text/javascript">
+    
+
+    var _startDate = new Date();
+    
+    function Body_OnLoad() 
+    {
+        
+        _startDate = new Date();
+    };
+
+    /// 4. Function called by the BODY, when closing the page
+    function Body_OnUnload()
+    {
+        
+    };
+
+    function GetTotalTime() 
+    {
+        return (new Date().getTime() - _startDate.getTime()) / 1000;
+    };
+</script>
+</body>
+</html>
