@@ -18,7 +18,7 @@
   <organizations default="assima_courses">
     <organization identifier="assima_courses" >
 		  <title><![CDATA[Combined 1-4 Lessons (fb) - DCharron Evaluation Mode]]></title>
-        <item identifier="item14547" identifierref="item_resource_14547" isvisible="true">
+        <item identifier="item14551" identifierref="item_resource_14551" isvisible="true">
                         <title><![CDATA[Combined 1-4 Lessons (fb) - DCharron Evaluation Mode]]></title>
                         <metadata>
                           <lom xmlns="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ltsc.ieee.org/xsd/LOM lom.xsd">
@@ -40,7 +40,7 @@
     </organization>
   </organizations>
   <resources>
-    <resource identifier="item_resource_14547" type="webcontent" adlcp:scormType="sco" href="./index.htm">
+    <resource identifier="item_resource_14551" type="webcontent" adlcp:scormType="sco" href="./index.htm">
                            <file href="./index.htm"/>
                          </resource>
 
