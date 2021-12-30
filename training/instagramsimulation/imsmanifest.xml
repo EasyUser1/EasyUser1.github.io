@@ -17,9 +17,9 @@
    </metadata>
   <organizations default="assima_courses">
     <organization identifier="assima_courses" >
-		  <title><![CDATA[Combined 1-3 Lessons (Insta) - DCharron Evaluation Mode]]></title>
-        <item identifier="item14550" identifierref="item_resource_14550" isvisible="true">
-                        <title><![CDATA[Combined 1-3 Lessons (Insta) - DCharron Evaluation Mode]]></title>
+		  <title><![CDATA[Learning Instagram In An Actual Simulation]]></title>
+        <item identifier="item14557" identifierref="item_resource_14557" isvisible="true">
+                        <title><![CDATA[Learning Instagram In An Actual Simulation]]></title>
                         <metadata>
                           <lom xmlns="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ltsc.ieee.org/xsd/LOM lom.xsd">
                             <general>
@@ -40,7 +40,7 @@
     </organization>
   </organizations>
   <resources>
-    <resource identifier="item_resource_14550" type="webcontent" adlcp:scormType="sco" href="./index.htm">
+    <resource identifier="item_resource_14557" type="webcontent" adlcp:scormType="sco" href="./index.htm">
                            <file href="./index.htm"/>
                          </resource>
 
