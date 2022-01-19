@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
    <head>
-      <title>HTML Meta Tag</title>
-      <meta http-equiv = "refresh" content = "0; url = https://easyuser.co/how-can-we-be-better/" />
+      <meta http-equiv="Refresh" content="0; url='https://easyuser.co/how-can-we-be-better/'" />
    </head>
    <body>
-      <p>Hello Worlds!</p>
    </body>
 </html>
