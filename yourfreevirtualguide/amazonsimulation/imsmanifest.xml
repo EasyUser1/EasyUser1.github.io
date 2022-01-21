@@ -18,7 +18,7 @@
   <organizations default="assima_courses">
     <organization identifier="assima_courses" >
 		  <title><![CDATA[Learning Amazon In An Actual Simulation]]></title>
-        <item identifier="item14607" identifierref="item_resource_14607" isvisible="true">
+        <item identifier="item14640" identifierref="item_resource_14640" isvisible="true">
                         <title><![CDATA[Learning Amazon In An Actual Simulation]]></title>
                         <metadata>
                           <lom xmlns="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ltsc.ieee.org/xsd/LOM lom.xsd">
@@ -40,7 +40,7 @@
     </organization>
   </organizations>
   <resources>
-    <resource identifier="item_resource_14607" type="webcontent" adlcp:scormType="sco" href="./index.htm">
+    <resource identifier="item_resource_14640" type="webcontent" adlcp:scormType="sco" href="./index.htm">
                            <file href="./index.htm"/>
                          </resource>
 
