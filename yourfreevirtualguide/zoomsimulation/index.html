@@ -14,21 +14,6 @@
 		     
 </script>
 	
-	<script type="text/javascript">
-function timer11(){_gaq.push(['_trackEvent', 'TimeOnPage', '1', '11-30 seconds', 0, true]);
-function timer31(){_gaq.push(['_trackEvent', 'TimeOnPage', '2', '31-60 seconds', 0, true]);
-function timer61(){_gaq.push(['_trackEvent', 'TimeOnPage', '3', '61-180 seconds', 0, true]);
-function timer181(){_gaq.push(['_trackEvent', 'TimeOnPage', '4', '181-600 seconds', 0, true]);
-function timer601(){_gaq.push(['_trackEvent', 'TimeOnPage', '5', '601-1800 seconds', 0, true]);
-function timer1801(){_gaq.push(['_trackEvent', 'TimeOnPage', '6', '1801+ seconds', 0, true]);
-_gaq.push(['_trackEvent', 'TimeOnPage', '0', '0-10 seconds', 0, true]);
-setTimeout(timer11,11000);
-setTimeout(timer31,31000);
-setTimeout(timer61,61000);
-setTimeout(timer181,181000);
-setTimeout(timer601,601000);
-setTimeout(timer1801,1801000);
-</script>
 	
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
@@ -57,7 +42,21 @@ setTimeout(timer1801,1801000);
 <LINK rel='stylesheet' type='text/css' href='TemplatesAndThemes/25cbb235-4b18-4fde-9a1e-7b78bcfddd8b_135_DCharronTheme_18_-1631495024_base314min/Templates/style.css' >
 <SCRIPT type='text/javascript' language='JavaScript' src='TemplatesAndThemes/25cbb235-4b18-4fde-9a1e-7b78bcfddd8b_135_DCharronTheme_18_-1631495024_base314min/Templates/combined.js' ></SCRIPT>
 
-
+<script type="text/javascript">
+function timer11(){ga('send', 'event', 'TimeOnPage', '1', '11-30 seconds', { 'nonInteraction': 1 });}
+function timer31(){ga('send', 'event', 'TimeOnPage', '2', '31-60 seconds', { 'nonInteraction': 1 });}
+function timer61(){ga('send', 'event', 'TimeOnPage', '3', '61-180 seconds', { 'nonInteraction': 1 });}
+function timer181(){ga('send', 'event', 'TimeOnPage', '4', '181-600 seconds', { 'nonInteraction': 1 });}
+function timer601(){ga('send', 'event', 'TimeOnPage', '5', '601-1800 seconds', { 'nonInteraction': 1 });}
+function timer1801(){ga('send', 'event', 'TimeOnPage', '6', '1801+ seconds', { 'nonInteraction': 1 });}
+ga('send', 'event', 'TimeOnPage', '0', '0-10 seconds', { 'nonInteraction': 1 });
+setTimeout(timer11,11000);
+setTimeout(timer31,31000);
+setTimeout(timer61,61000);
+setTimeout(timer181,181000);
+setTimeout(timer601,601000);
+setTimeout(timer1801,1801000);
+</script>
 </head>
 <body class="masterBody" id="mainBody" onload="Body_OnLoad();" onunload="Body_OnUnload();">
 ﻿<!-- View: loading -->
