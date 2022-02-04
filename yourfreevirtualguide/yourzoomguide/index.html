@@ -69,7 +69,7 @@
     
     <div class="content">
 
-        <a id="start" href="index.htm" target="_blank" onclick="Player.start(); return false;">
+        <a id="start" href="index.htm" target="_self" onclick="Player.start(); return false;">
             Click here to start the lesson
         </a>
 
@@ -86,11 +86,11 @@
         <br />
         <div class="options">
 
-            <a id="resume" href="index.htm" target="_blank" onclick="Player.resume(); return false;">
+            <a id="resume" href="index.htm" target="_self" onclick="Player.resume(); return false;">
                 Click here to resume the lesson where you left it
             </a>
 
-            <a id="restart" href="index.htm" target="_blank" onclick="Player.start(); return false;">
+            <a id="restart" href="index.htm" target="_self" onclick="Player.start(); return false;">
                 Alternatively, click here to restart the lesson from the beginning
             </a>
 
@@ -180,7 +180,7 @@
         <!-- Message box (tutorial message for the undocked mode) -->
         <div id="messageBox" class="floating message BottomRight" style="display: none">
 
-            <iframe class="mask" src="about:blank" scrolling="no" frameborder="0"></iframe>
+            <iframe class="mask" src="about:self" scrolling="no" frameborder="0"></iframe>
 
             <div id="messageBoxTitleBar" class="titlebar">
                 <a href="#" id="previousButtonMessageBox" class="navigation disabled" title="Previous"></a>
@@ -343,7 +343,7 @@
 
     <!-- Message popup -->
     <div id="messagePopup" style="display: none">
-        <iframe class="mask" src="about:blank" scrolling="no" frameborder="0"></iframe>
+        <iframe class="mask" src="about:self" scrolling="no" frameborder="0"></iframe>
         <div id="messagePopupTransparency"></div>
         <div id="messagePopupWindow" class="floating message">
             <div id="popupTitleBar" class="titlebar"></div>
