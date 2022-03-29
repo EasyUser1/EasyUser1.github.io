@@ -5216,7 +5216,7 @@ function CameraUI_UpdateCameraState(bActive)
 function CameraUI_IsBusy()
 {
 	//return true if we need to wait
-	return __CONTROLLER != null && __CONTROLLER.isBusy() || __SCREENSHOT_CAMERA_WAITING || __SIMULATOR.NotifyInterpreterPanelResizeDelayed_Timer;
+	return __CONTROLLER != null && __CONTROLLER.isBusy() || __SCREENSHOT_CAMERA_WAITING || __SIMULATOR.NotifyInterpreterPanelResizeDelayed_Timer || !__EVENTS_QUEUE.IsIdle() || __WAIT_MANAGER.IsWaiting();
 }
 ///
 //Camera Itself
@@ -10035,7 +10035,7 @@ function Browser_DecodeKeyEvent(event)
 		case 0xbf: keyStroke += "OEM_2"; break;
 		case 0xc0: keyStroke += "OEM_3"; break;
 		case 0xdb: keyStroke += "OEM_4"; break;
-		case 0xdc: keyStroke += "OEM_5"; break;
+		case 0xdc: keyStroke += "Backslash"; break;
 		case 0xdd: keyStroke += "OEM_6"; break;
 		case 0xde: keyStroke += "OEM_7"; break;
 		case 0xdf: keyStroke += "OEM_8"; break;
@@ -14931,7 +14931,7 @@ function CameraCommand_Laser_Process(elapsed)
 				//stop the camera
 				window.__SCREENSHOT_CAMERA_WAITING = true;
 				//trigger screenshot assynchronously
-				__SIMULATOR.ScreenShots.Notify(this.Camera.CameraData.Parameters.CMD, this.Camera.CameraData.Parameters.ID, this.TargetRect, this.Camera.CameraData.Parameters.TYPE_ID, __SCREENSHOT_CALLBACK_TYPE_CAMERA);
+				__SIMULATOR.ScreenShots.Notify(this.Camera.CameraData.Parameters.CMD, this.Camera.CameraData.Parameters.ID, this.TargetRect.Inflate(2), this.Camera.CameraData.Parameters.TYPE_ID, __SCREENSHOT_CALLBACK_TYPE_CAMERA);
 			}
 			//all done!
 			bFinished = true;
@@ -16382,7 +16382,7 @@ function CameraCommand_Overlay_Process(elapsed)
 				//stop the camera
 				window.__SCREENSHOT_CAMERA_WAITING = true;
 				//trigger screenshot assynchronously
-				__SIMULATOR.ScreenShots.Notify(this.Camera.CameraData.Parameters.CMD, this.Camera.CameraData.Parameters.ID, this.TargetRect, this.Camera.CameraData.Parameters.TYPE_ID, __SCREENSHOT_CALLBACK_TYPE_CAMERA);
+				__SIMULATOR.ScreenShots.Notify(this.Camera.CameraData.Parameters.CMD, this.Camera.CameraData.Parameters.ID, this.TargetRect.Inflate(2), this.Camera.CameraData.Parameters.TYPE_ID, __SCREENSHOT_CALLBACK_TYPE_CAMERA);
 			}
 			//all done!
 			bFinished = true;
@@ -22363,6 +22363,7 @@ function Tut_ConvertMsgToControllerMsg(wi4Msg, controller, parameters, bAutoTime
 	{
 		//set position data
 		newMessage.Positioning = wi4Msg.Positioning;
+		newMessage.CoordinateTrigger = wi4Msg.CoordinateTrigger;
 		newMessage.Referential = wi4Msg.Referential;
 		newMessage.Location = wi4Msg.Location;
 		newMessage.Size = wi4Msg.Size;
@@ -25578,6 +25579,7 @@ function Interpreter_SetFocusOnInitialObject(theObject)
 							{
 								//attempt normal focus
 								theObject.HTML.focus();
+								__EVENTS_QUEUE.AddEvent("Edit_UpdateFocusLookAndFeelDelayed('" + theObject.DataObject.Id+ "');", 0);
 							}
 							catch (e)
 							{
@@ -26590,43 +26592,31 @@ function IntObject_IntObject(theObjectData, theObjectParent)
 	this.HTMLParent = null; 											//Its HTML Element that hosts children
 	this.VarName = null; 												//Its FX VarName
 	this.UseGDI = false;												//determines how to render its font
-	//parent valid?
+
 	if (this.Parent != null)
 	{
-		//marker for adding
 		var bAdd = true;
-		//get our sibling id
-		var uidSibling = theObjectData.SiblingId;
-		//has a sibling?
-		if (uidSibling != -1)
+		var order = theObjectData.Order;
+		if (order >= 0)
 		{
-			//get parent's children
 			var children = this.Parent.Children;
-			//loop through its children
 			for (var i = 0, c = children.length; i < c; i++)
 			{
-				//is this our sibling?
-				if (children[i].DataObject.Id == uidSibling)
+				if (children[i].DataObject.Order > order)
 				{
-					//insert ourselfs here
 					children.splice(i, 0, this);
-					//we dont need to add anymore
 					bAdd = false;
-					//end loop
 					break;
 				}
 			}
 		}
-		//still need to add?
 		if (bAdd)
 		{
-			//add ourselves to its children
 			this.Parent.Children.push(this);
 		}
 	}
-	//update our css property
+
 	this.UpdateCSSStyleProperty();
-	//update GDI
 	this.UpdateFontRendering();
 }
 //notification of destruction, use if needed
@@ -26661,80 +26651,30 @@ function IntObject_NotifyDestruction()
 //appends a child's html object to our object
 function IntObject_AppendChild(childHTML, bSkipFixed)
 {
-	//this is the result
 	var result = null;
-	//is this a style object that is fixed style?
 	if (!bSkipFixed && childHTML.InterpreterObject && childHTML.InterpreterObject.StyleProperties && childHTML.InterpreterObject.StyleProperties.FixedPosition)
 	{
-		//we need to modify the object to set it as a fixed object
 		result = Unknown_SetAsFixedObject(childHTML.InterpreterObject, true);
 	}
 	else
 	{
-		//get its sibling id
-		var uidSibling = childHTML.InterpreterObject.DataObject.SiblingId;
-		//has sibling?
-		if (uidSibling > 0)
+		var order = childHTML.InterpreterObject.DataObject.Order;
+		if (order >= 0)
 		{
-			//obtain current state
-			var wi4State = __SIMULATOR.StateManager.CurrentState;
-			//create a next array
-			var next = [];
-			//while we havw a sibling
-			while (uidSibling > 0)
+			for (var child = this.HTMLParent.firstChild; child && result == null; child = child.nextSibling)
 			{
-				//want to replace this object
-				var newSubScreenId = Get_Number(wi4State.Replacements[uidSibling], -1);
-				//valid?
-				if (newSubScreenId > 0)
+				if (child.InterpreterObject && child.InterpreterObject.DataObject.Order > order)
 				{
-					//get the new subscreen
-					var subScreen = wi4State.SubScreens[newSubScreenId];
-					//get its root id
-					uidSibling = subScreen ? subScreen.RootObject.Id : uidSibling;
-				}
-				//store the sibling id
-				next[next.length] = uidSibling;
-				//try to get this one
-				var siblingObject = __SIMULATOR.Interpreter.LoadedObjects[uidSibling];
-				//get its uid sibling
-				uidSibling = siblingObject ? siblingObject.DataObject.SiblingId : -1;
-			}
-			//has valid sibling id
-			if (next.length > 0)
-			{
-				//loop through all of our children
-				for (var child = this.HTMLParent.firstChild; child && result == null; child = child.nextSibling)
-				{
-					//this an interpreter object?
-					if (child.InterpreterObject)
-					{
-						//get its id
-						var childId = child.InterpreterObject.DataObject.Id;
-						//lets see if we are before it (no array indexOf in IE8)
-						for (var i = next.length; i--;)
-						{
-							//match?
-							if (childId == next[i])
-							{
-								//add ourselves just before this one
-								result = this.HTMLParent.insertBefore(childHTML, child);
-								//end loop
-								break;
-							}
-						}
-					}
+					result = this.HTMLParent.insertBefore(childHTML, child);
+					break;
 				}
 			}
 		}
-		//nothing yet?
 		if (result == null)
 		{
-			//append
 			result = this.HTMLParent.appendChild(childHTML);
 		}
 	}
-	//return the result
 	return result;
 }
 //checks if a command is active
@@ -26845,45 +26785,46 @@ function IntObject_UpdateCSSStyleProperty()
 		//could have properties, convert into an object
 		this.StyleProperties = { cssText: "", Original: {}, Zoom: null };
 		//split it
-		strCSS = strCSS.split(";");
+		strCSS = strCSS.replace(/;(?!base)/gi, "¬").split("¬");
 		//now loop through all of them
 		for (var iCSS = 0, cCSS = strCSS.length; iCSS < cCSS; iCSS++)
 		{
-			//split this into key value pair
-			var pair = strCSS[iCSS].split(":");
+			//find the separator
+			var separator = strCSS[iCSS].indexOf(":");
 			//valid?
-			if (pair.length == 2)
+			if (separator != -1)
 			{
 				//we want to make sure we trim the key
-				pair[0] = pair[0].Trim();
+				var key = strCSS[iCSS].substring(0, separator).Trim();
+				var value = strCSS[iCSS].substring(separator + 1);
 				//store it
-				this.StyleProperties.Original[pair[0]] = pair[1];
+				this.StyleProperties.Original[key] = value;
 				//switch on it
-				switch (pair[0].toLowerCase())
+				switch (key.toLowerCase())
 				{
 					case "pointer-events":
 						//only process this if we arent in designer or if the value is not "none"
-						if (!__DESIGNER_CONTROLLER || !/none/i.test(pair[1]))
+						if (!__DESIGNER_CONTROLLER || !/none/i.test(value))
 						{
 							//add it to the css text
-							this.StyleProperties.cssText += pair[0] + ":" + pair[1] + ";";
+							this.StyleProperties.cssText += key + ":" + value + ";";
 						}
 						break;
 					case "zoom":
 						//add it to the css text
-						this.StyleProperties.cssText += pair[0] + ":" + pair[1] + ";";
+						this.StyleProperties.cssText += key + ":" + value + ";";
 						//but we also need to mark this as a valid zoom object
-						this.StyleProperties.Zoom = Zoom_Register(this, pair[1]);
+						this.StyleProperties.Zoom = Zoom_Register(this, value);
 						break;
 					case "content":
 						//replace all url(' with url(' plus host
-						pair[1] = pair[1].replace(/url\('(?!data:)/gi, "url('" + __HOST_LESSON_RESOURCES);
+						value = value.replace(/url\('(?!data:)/gi, "url('" + __HOST_LESSON_RESOURCES);
 						//add it to the css text
-						this.StyleProperties.cssText += pair[0] + ":" + pair[1] + ";";
+						this.StyleProperties.cssText += key + ":" + value + ";";
 						break;
 					default:
 						//add it to the css text
-						this.StyleProperties.cssText += pair[0] + ":" + pair[1] + ";";
+						this.StyleProperties.cssText += key + ":" + value + ";";
 						break;
 				}
 			}
@@ -32500,8 +32441,8 @@ function Basic_SetBackImage(theHTML, theObject, strImage, strImagePos)
 								left = aImagePos[0] + "px";
 								top = aImagePos[1] + "px";
 								//set size
-								width = aImagePos[2] + "px";
-								height = aImagePos[3] + "px";
+								width = aImagePos[2] == "0" ? "100%" : (aImagePos[2]+ "px");
+								height = aImagePos[3] == "0" ? "100%" : (aImagePos[3] + "px");
 							}
 							break;
 						default:
@@ -32897,7 +32838,7 @@ function Basic_SetGridImage(theHTML, theObject, strGridImages)
 function Basic_SetVisualFilter(theHTML, strFilter)
 {
 	//check if we have an opacity filter
-	if (strFilter.match(/alpha\(opacity\s*=\s*(\d\d?)\)/i))
+	if (strFilter.match(/alpha\(opacity\s*=\s*(\d+)\)/i))
 	{
 		//set the opacity
 		Browser_SetOpacity(theHTML, Get_Number(RegExp.$1));
@@ -36018,8 +35959,9 @@ function Edit_OnFocus(theObject)
 					__SIMULATOR.ProcessEvent(new Event_Event(theObject.TreeGridObject, __NEMESIS_EVENT_FOCUSOUT, aData));
 				}
 			}
+			
 			//did we loose focus?
-			else if (!theObject.HTML.STATES_FOCUSED)
+			else if (!theObject.HTML.STATES_FOCUSED && !theObject.UltraGrid)
 			{
 				//trigger a focus out
 				__SIMULATOR.ProcessEvent(new Event_Event(theObject, __NEMESIS_EVENT_FOCUSOUT, theObject.GetData()));
@@ -36714,6 +36656,7 @@ function Label_UpdateProperties(listProperties)
 					}
 				}
 				break;
+			case __NEMESIS_PROPERTY_DRAW_DISABLED:
 			case __NEMESIS_PROPERTY_ENABLED:
 			case __NEMESIS_PROPERTY_CURSOR:
 				//Updates the Cursor 
@@ -38847,9 +38790,22 @@ function ComboBox_CreateEdit(theHTML, theObject)
 						//adjust the edit
 						editCSSText += "height:" + (nHeight - (nPadBottom + nPadTop)) + "px;";
 						editCSSText += "top:" + nPadTop + "px;";
-						//and the button
-						buttonCSSText += "height:" + (nHeight - (nPadBottom + nPadTop)) + "px;";
-						buttonCSSText += "top:" + nPadTop + "px;";
+
+						//and the button, Sometimes the combo edit and button does not have the same padding, so here we set the padding (top and buttom) for the button
+						var paddingModiferTop = nPadTop;
+						var paddingModiferBottom = nPadBottom;
+
+						if (ownerDrawn != null && ownerDrawn.Padding != null)
+						{
+							var astrImagePadding = ownerDrawn.Padding.split(",");
+							if (astrImagePadding.length === 2)
+							{
+								paddingModiferTop = parseInt(astrImagePadding[0]);
+								paddingModiferBottom = parseInt(astrImagePadding[1]);
+							}
+						}
+						buttonCSSText += "height:" + (nHeight - (paddingModiferBottom + paddingModiferTop)) + "px;";
+						buttonCSSText += "top:" + paddingModiferTop + "px;";
 					}
 					//adjust the left of the edit
 					editCSSText += "left:" + nPadLeft + "px;";
@@ -42896,7 +42852,7 @@ function TabControl_CreateTabButton(theHTML, strTabText, nIndex, nInterfaceLook,
 		Browser_AddEvent(button, __BROWSER_EVENT_CLICK, TabControl_TabButton_MouseDown);
 	}
 	//get button size
-	button.Size = { w: Get_Number(button.InterpreterObject.Properties[__NEMESIS_PROPERTY_ITEM_WIDTH], 0), h: Get_Number(button.InterpreterObject.Properties[__NEMESIS_PROPERTY_ITEM_HEIGHT], 0) };
+	button.ItemSize = { w: Get_Number(button.InterpreterObject.Properties[__NEMESIS_PROPERTY_ITEM_WIDTH], 0), h: Get_Number(button.InterpreterObject.Properties[__NEMESIS_PROPERTY_ITEM_HEIGHT], 0) };
 	//switch on look
 	switch (nInterfaceLook)
 	{
@@ -43016,15 +42972,15 @@ function TabControl_TabButton_ParseExceptionIntoText(strException, uidObject, st
 	if (style && !String_IsNullOrWhiteSpace(style.ImageBefore))
 	{
 		//add this first
-		result += "<img style='vertical-align:middle' src='" + __HOST_LESSON_RESOURCES + style.ImageBefore + "'>";
+		result += "<img style='vertical-align:middle;pointer-events:none;' src='" + __HOST_LESSON_RESOURCES + style.ImageBefore + "'>";
 	}
 	//process default value
-	result += strException.ToPlainText(uidObject).replace(/@(.+)@/gi, "<img style='vertical-align:middle' src='" + __HOST_LESSON_RESOURCES + "$1'>");
+	result += strException.ToPlainText(uidObject).replace(/@(.+)@/gi, "<img style='vertical-align:middle;pointer-events:none;' src='" + __HOST_LESSON_RESOURCES + "$1'>");
 	//do we have style? with after image?
 	if (style && !String_IsNullOrWhiteSpace(style.ImageAfter))
 	{
 		//add this last
-		result += "<img style='vertical-align:middle' src='" + __HOST_LESSON_RESOURCES + style.ImageAfter + "'>";
+		result += "<img style='vertical-align:middle;pointer-events:none;' src='" + __HOST_LESSON_RESOURCES + style.ImageAfter + "'>";
 	}
 	//return the result
 	return result;
@@ -43458,11 +43414,19 @@ function TabControl_TabButton_UpdateDisplay()
 	this.style.textAlign = style.Align;
 	this.style.padding = style.Padding;
 	Basic_SetFonts(this, style.Font, this.InterpreterObject);
+
+	//calculate button modifiers
+	var modifier =
+	{
+		w: Get_NumberFromStyle(this.style.paddingLeft, 0) + Get_NumberFromStyle(this.style.paddingRight, 0) + Get_NumberFromStyle(this.style.borderLeftWidth, 0) + Get_NumberFromStyle(this.style.borderRightWidth, 0),
+		h: Get_NumberFromStyle(this.style.paddingTop, 0) + Get_NumberFromStyle(this.style.paddingBottom, 0) + Get_NumberFromStyle(this.style.borderTopWidth, 0) + Get_NumberFromStyle(this.style.borderBottomWidth, 0)
+	};
+
 	//get button size (remove any padding and border from the preset height or else it wont display accurately)
 	this.Size =
 	{
-		w: Get_Number(style.Width, 0) - Get_NumberFromStyle(this.style.paddingLeft, 0) - Get_NumberFromStyle(this.style.paddingRight, 0) - Get_NumberFromStyle(this.style.borderLeftWidth, 0) - Get_NumberFromStyle(this.style.borderRightWidth, 0),
-		h: Get_Number(style.Height, 0) - Get_NumberFromStyle(this.style.paddingTop, 0) - Get_NumberFromStyle(this.style.paddingBottom, 0) - Get_NumberFromStyle(this.style.borderTopWidth, 0) - Get_NumberFromStyle(this.style.borderBottomWidth, 0)
+		w: this.ItemSize.w > 4 ? this.ItemSize.w : (Get_Number(style.Width, 0) - modifier.w),
+		h: this.ItemSize.h > 2 ? this.ItemSize.h : (Get_Number(style.Height, 0) - modifier.h)
 	};
 	//button has width?
 	if (this.Size.w > 4)
@@ -43475,7 +43439,7 @@ function TabControl_TabButton_UpdateDisplay()
 	{
 		//set it
 		this.style.height = this.Size.h + "px";
-		this.style.lineHeight = this.Size.h + "px";
+		this.style.lineHeight = (this.ItemSize.h > 2 ? this.Size.h - modifier.h : this.Size.h) + "px";
 	}
 	//set inner html
 	this.innerHTML = TabControl_TabButton_ParseExceptionIntoText(this.Exception, this.InterpreterObject.DataObject.Id, style); // SAFE BY ENCODING
@@ -47824,23 +47788,17 @@ function ListBox_CorrectStyleProperties(theObject)
 	//was this a js object?
 	if (theObject.StyleProperties)
 	{
-		//border modifiers
-		var nHeight = 0;
-		var nWidth = 0;
-		//check the border
-		if (String_IsNullOrWhiteSpace(theHTML.style.border))
+		//calculate border modifiers
+		var nHeight = Get_NumberFromStyle(theHTML.style.borderTopWidth, 0) + Get_NumberFromStyle(theHTML.style.borderBottomWidth, 0);
+		var nWidth = Get_NumberFromStyle(theHTML.style.borderLeftWidth, 0) + Get_NumberFromStyle(theHTML.style.borderRightWidth, 0);
+		if ((nHeight + nWidth) == 0 && String_IsNullOrWhiteSpace(theHTML.style.border))
 		{
 			//force the client edge
 			Themes_SetClientEdge(theHTML, theObject);
 			//we know these modifiers
 			nHeight = 4;
 			nWidth = 4;
-		}
-		else
-		{
-			//calculate modifiers
-			nWidth = Get_NumberFromStyle(theHTML.style.borderLeftWidth, 0) + Get_NumberFromStyle(theHTML.style.borderRightWidth, 0);
-			nHeight = Get_NumberFromStyle(theHTML.style.borderTopWidth, 0) + Get_NumberFromStyle(theHTML.style.borderBottomWidth, 0);
+
 		}
 		//listbox requires real width
 		theHTML.style.width = Math.max(0, Get_Number(theObject.Properties[__NEMESIS_PROPERTY_WIDTH], 1) - nWidth) + "px";
@@ -47926,7 +47884,7 @@ function ListBox_UpdateContent(theHTML, theObject)
 		var aColorBGSelected = String_IsNullOrWhiteSpace(theObject.Properties[__NEMESIS_PROPERTY_CB_OPTION_BG_COLORS_SELECTED]) ? new Array(theObject.BGColours[__STATE_SELECTED]) : theObject.Properties[__NEMESIS_PROPERTY_CB_OPTION_BG_COLORS_SELECTED].split(__COMBOBOX_CONTENT_SEPARATOR);
 		var interfaceLook = theObject.InterfaceLook;
 		//now loop for the item creation
-		for (i = 0, c = aContent.length, nTop = 0, nHeight = theObject.LineHeight; i < c; i++ , nTop += theObject.LineHeight)
+		for (i = 0, c = aContent.length, nTop = 0, nHeight = theObject.LineHeight; i < c; i++, nTop += theObject.LineHeight)
 		{
 			//create the item
 			var newItem =
@@ -47999,7 +47957,7 @@ function ListBox_UpdateContent(theHTML, theObject)
 			//sort it
 			theObject.Items.sort(function (a, b) { return a.Value.localeCompare(b.Value); });
 			//now loop to reset top
-			for (i = 0, c = theObject.Items.length, nTop = 0; i < c; i++ , nTop += theObject.LineHeight)
+			for (i = 0, c = theObject.Items.length, nTop = 0; i < c; i++, nTop += theObject.LineHeight)
 			{
 				//correct the top
 				theObject.Items[i].Top = nTop;
