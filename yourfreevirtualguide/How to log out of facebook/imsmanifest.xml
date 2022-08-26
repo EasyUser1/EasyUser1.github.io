@@ -18,7 +18,7 @@
   <organizations default="assima_courses">
     <organization identifier="assima_courses" >
 		  <title><![CDATA[How to log out of Facebook... - Evaluation]]></title>
-        <item identifier="item316" identifierref="item_resource_316" isvisible="true">
+        <item identifier="item317" identifierref="item_resource_317" isvisible="true">
                         <title><![CDATA[How to log out of Facebook... - Evaluation]]></title>
                         <metadata>
                           <lom xmlns="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ltsc.ieee.org/xsd/LOM lom.xsd">
@@ -40,7 +40,7 @@
     </organization>
   </organizations>
   <resources>
-    <resource identifier="item_resource_316" type="webcontent" adlcp:scormType="sco" href="index.htm">
+    <resource identifier="item_resource_317" type="webcontent" adlcp:scormType="sco" href="index.htm">
                            <file href="index.htm"/>
                          </resource>
 
