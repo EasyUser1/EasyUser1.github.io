@@ -16714,10 +16714,6 @@ function CameraCommand_Action_Initialise()
 					//simple generic focus out
 					this.ActionMode = __CAMERA_CMD_ACTION_MODE_FOCUS_OUT;
 					break;
-				case __NEMESIS_EVENT_MOUSEOVER:
-					//simple mouse over but use mousedown for touch enabled browsers
-					this.ActionMode = __BROWSER_IS_TOUCH_ENABLED ? __CAMERA_CMD_ACTION_MODE_LEFT_CLICK : __CAMERA_CMD_ACTION_MODE_MOUSEOVER;
-					break;
 				default:
 					//trigger debug alert
 					Common_Error("CameraCommand_Action: Edit: Event not yet implemented:" + this.Event);
@@ -22375,13 +22371,13 @@ function Tut_ConvertMsgToControllerMsg(wi4Msg, controller, parameters, bAutoTime
 			{
 				//set parameters
 				newMessage.Type = controller.MessageTypes.Timer;
+				newMessage.TimeToDisplay = wi4Msg.EventTimer;
 				//invalid time?
-				if (wi4Msg.EventTimer <= 0 && bAutoTime)
+				if (newMessage.TimeToDisplay <= 0 && bAutoTime)
 				{
 					//use default time
-					wi4Msg.EventTimer = Get_Bool(parameters[__NEMESIS_ParamName_UseDynamicTimerForTimerMessage], true) ? Tut_ComputeDynamicTimerDelay(newMessage.HTMLText, readingSpeed) : Get_Number(parameters[__NEMESIS_ParamName_DefaultTimerMessageDelay], 5);
+					newMessage.TimeToDisplay = Get_Bool(parameters[__NEMESIS_ParamName_UseDynamicTimerForTimerMessage], true) ? Tut_ComputeDynamicTimerDelay(newMessage.HTMLText, readingSpeed) : Get_Number(parameters[__NEMESIS_ParamName_DefaultTimerMessageDelay], 5);
 				}
-				newMessage.TimeToDisplay = wi4Msg.EventTimer;
 			}
 			else
 			{
@@ -22403,17 +22399,17 @@ function Tut_ConvertMsgToControllerMsg(wi4Msg, controller, parameters, bAutoTime
 		default:
 			//set parameters
 			newMessage.Type = controller.MessageTypes.Default;
+			newMessage.TimeToDisplay = wi4Msg.EventTimer;
 			//use dafault time ? 0 is a valid custom value (the user may want the action to be played immediately), though we test only negative values
-			if (wi4Msg.EventTimer < 0 && bAutoTime)
+			if (newMessage.TimeToDisplay < 0 && bAutoTime)
 			{
 				//are we in auto playback mode?
 				if (parameters && (Get_Bool(parameters[__NEMESIS_ParamName_LessonAutoShowHints], false) || Get_Bool(parameters[__NEMESIS_ParamName_LessonAutoPlayCamera], false)))
 				{
 					//use default time
-					wi4Msg.EventTimer = Get_Bool(parameters[__NEMESIS_ParamName_UseDynamicTimerForPlayback], true) ? Tut_ComputeDynamicTimerDelay(newMessage.HTMLText, readingSpeed) : Get_Number(parameters[__NEMESIS_ParamName_LessonDefaultAutomatisationDelay], 3);
+					newMessage.TimeToDisplay = Get_Bool(parameters[__NEMESIS_ParamName_UseDynamicTimerForPlayback], true) ? Tut_ComputeDynamicTimerDelay(newMessage.HTMLText, readingSpeed) : Get_Number(parameters[__NEMESIS_ParamName_LessonDefaultAutomatisationDelay], 3);
 				}
 			}
-			newMessage.TimeToDisplay = wi4Msg.EventTimer;
 			break;
 	}
 	//return the new message
@@ -22479,7 +22475,7 @@ function Tut_CountWordsInHTML(strHTML)
 	//create a fake div
 	var div = document.createElement("div");
 	//set the text in this div
-	div.innerHTML = strHTML.replace(/<img[^>]*>/ig,""); // SAFE BY SANITIZATION
+	div.innerHTML = strHTML; // SAFE BY SANITIZATION
 	// Get text
 	var text = div.textContent || div.innerText || div.innerHTML || ""; // SAFE
 	//now count the words
@@ -22666,16 +22662,29 @@ function Themes_SetClientEdge(theHTML, theObject)
 	switch (theObject.DataObject.Class)
 	{
 		case __NEMESIS_CLASS_PUSH_BUTTON:
-			//set client edge border
-			theHTML.style.borderLeft = "1px solid #777777";
-			theHTML.style.borderTop = "1px solid #777777";
-			theHTML.style.borderRight = "1px solid #777777";
-			theHTML.style.borderBottom = "1px solid #777777";
-			if (!(theObject.TreeGridHeader || theObject.UltraGridHeader) && theObject.InterfaceLook == __NEMESIS_LOOK_BROWSER_DEFAULT && Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_RADIUSES], null) == null)
+			//windows 10?
+			if (theObject.InterfaceLook === __NEMESIS_LOOK_WINDOWS_10)
 			{
-				theHTML.style.borderRadius = "3px";
+				//set client edge border
+				theHTML.style.borderLeft = "1px solid #7A7A7A";
+				theHTML.style.borderTop = "1px solid #7A7A7A";
+				theHTML.style.borderRight = "1px solid #7A7A7A";
+				theHTML.style.borderBottom = "1px solid #7A7A7A";
 			}
-
+			//ie8?
+			else if (__BROWSER_IE8_OR_LESS)
+			{
+				//do nothing
+			}
+			else
+			{
+				//just correct the border width
+				theHTML.style.borderLeft = "";
+				theHTML.style.borderTop = "";
+				theHTML.style.borderRight = "";
+				theHTML.style.borderBottom = "";
+				theHTML.style.border = "";
+			}
 			break;
 		default:
 			//switch according to the theme
@@ -23354,22 +23363,19 @@ function Themes_PreProcessPushButton(theObject)
 				theObject.Properties[__NEMESIS_PROPERTY_BK_COLOR_DEFAULT] = "#F0F0F0";
 			if (String_IsNullOrWhiteSpace(theObject.Properties[__NEMESIS_PROPERTY_ALIGN]))
 				theObject.Properties[__NEMESIS_PROPERTY_ALIGN] = "center";
-			if (!(theObject.TreeGridHeader || theObject.UltraGridHeader) &&
-				Get_Bool(theObject.Properties[__NEMESIS_PROPERTY_CLIENTEDGE], true) &&
-				!Get_Bool(theObject.Properties[__NEMESIS_PROPERTY_FLAT], false) &&
-				(Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER], null) == null &&
-					Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_LEFT], null) == null &&
-					Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_TOP], null) == null &&
-					Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_RIGHT], null) == null &&
-					Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_BOTTOM], null) == null))
-			{
-				theObject.Properties[__NEMESIS_PROPERTY_CLIENTEDGE] = "";
-				theObject.Properties[__NEMESIS_PROPERTY_BORDER] = "solid,#767676,1px";
-				if (theObject.InterfaceLook == __NEMESIS_LOOK_BROWSER_DEFAULT && Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_RADIUSES], null) == null)
-				{
-					theObject.Properties[__NEMESIS_PROPERTY_BORDER_RADIUSES] = "3,3,3,3";
-				}
-			}
+			break;
+		case __NEMESIS_LOOK_WINDOWS_10:
+			if (String_IsNullOrWhiteSpace(theObject.Properties[__NEMESIS_PROPERTY_BK_COLOR_DEFAULT]))
+				theObject.Properties[__NEMESIS_PROPERTY_BK_COLOR_DEFAULT] = "#F0F0F0";
+			if (String_IsNullOrWhiteSpace(theObject.Properties[__NEMESIS_PROPERTY_ALIGN]))
+				theObject.Properties[__NEMESIS_PROPERTY_ALIGN] = "center";
+			if (!(Get_Bool(theObject.Properties[__NEMESIS_PROPERTY_FLAT], false) ||
+				Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER], null) != null ||
+				Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_LEFT], null) != null ||
+				Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_TOP], null) != null ||
+				Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_RIGHT], null) != null ||
+				Get_String(theObject.Properties[__NEMESIS_PROPERTY_BORDER_BOTTOM], null) != null))
+				theObject.Properties[__NEMESIS_PROPERTY_CLIENTEDGE] = "Yes";
 			break;
 		case __NEMESIS_LOOK_SAP_ENJOY:
 		case __NEMESIS_LOOK_SAP_TRADESHOW:
@@ -26778,7 +26784,7 @@ function IntObject_UpdateCSSStyleProperty()
 	if (strCSS != null)
 	{
 		//could have properties, convert into an object
-		this.StyleProperties = { cssText: "", Original: {}, Zoom: null, Rect: new Position_Rect(0, 0, 0, 0) };
+		this.StyleProperties = { cssText: "", Original: {}, Zoom: null };
 		//split it
 		strCSS = strCSS.replace(/;(?!base)/gi, "¬").split("¬");
 		//now loop through all of them
@@ -26814,30 +26820,6 @@ function IntObject_UpdateCSSStyleProperty()
 					case "content":
 						//replace all url(' with url(' plus host
 						value = value.replace(/url\('(?!data:)/gi, "url('" + __HOST_LESSON_RESOURCES);
-						//add it to the css text
-						this.StyleProperties.cssText += key + ":" + value + ";";
-						break;
-					case "left":
-						this.StyleProperties.Rect.left = Get_NumberFromStyle(value, this.StyleProperties.Rect.left);
-						this.StyleProperties.Rect.right = this.StyleProperties.Rect.left + this.StyleProperties.Rect.width;
-						//add it to the css text
-						this.StyleProperties.cssText += key + ":" + value + ";";
-						break;
-					case "top":
-						this.StyleProperties.Rect.top = Get_NumberFromStyle(value, this.StyleProperties.Rect.top);
-						this.StyleProperties.Rect.bottom = this.StyleProperties.Rect.top + this.StyleProperties.Rect.height;
-						//add it to the css text
-						this.StyleProperties.cssText += key + ":" + value + ";";
-						break;
-					case "width":
-						this.StyleProperties.Rect.width = Get_NumberFromStyle(value, this.StyleProperties.Rect.width);
-						this.StyleProperties.Rect.right = this.StyleProperties.Rect.left + this.StyleProperties.Rect.width;
-						//add it to the css text
-						this.StyleProperties.cssText += key + ":" + value + ";";
-						break;
-					case "height":
-						this.StyleProperties.Rect.height = Get_NumberFromStyle(value, this.StyleProperties.Rect.height);
-						this.StyleProperties.Rect.bottom = this.StyleProperties.Rect.top + this.StyleProperties.Rect.height;
 						//add it to the css text
 						this.StyleProperties.cssText += key + ":" + value + ";";
 						break;
@@ -34252,7 +34234,6 @@ function Edit_CreateHTMLObject(theObject)
 		Browser_AddEvent(theHTML, __BROWSER_EVENT_KEYUP, Edit_ValueChanged);
 	}
 	//always add this one
-	Browser_AddEvent(theHTML, __BROWSER_EVENT_MOUSEOVER, Label_MouseOver);
 	Browser_AddEvent(theHTML, __BROWSER_EVENT_SELECTSTART, Browser_CancelBubbleOnly);
 	//set states listeners
 	Basic_SetStatesListener(theHTML);
@@ -38641,14 +38622,14 @@ function ComboBox_CreateEdit(theHTML, theObject)
 					var rect = { x: 0, y: 0, w: 0, h: 0 };
 					//and some styles
 					var strBGColor = "#F0F0F0";
-					var strBorder = "1px solid #777777";
+					var strBorder = "";
 					//has ownerdrawn property?
 					var ownerDrawn = Get_String(theObject.Properties[__NEMESIS_PROPERTY_OWNERDRAW_IMAGES], null);
 					//windows look?
 					if (theObject.InterfaceLook == __NEMESIS_LOOK_WINDOWS_DEFAULT)
 					{
 						//set size same as ie8
-						rect = { x: -57, y: 6, w: 13, h: 4 };
+						rect = { x: -58, y: 8, w: 15, h: 4 };
 					}
 					else if (theObject.InterfaceLook == __NEMESIS_LOOK_WINDOWS_10)
 					{
@@ -45519,7 +45500,7 @@ function ToolBar_CreateCloneButton(theHTML, theObject, szImage, extraContent, im
 	//create the button itself
 	var button = document.createElement(strType);
 	//set its styles
-	button.style.cssText = "position:absolute;border:1px solid #777777;background-color:transparent;padding:0px;margin:0px;cursor:default;text-overflow:ellipsis;overflow:" + (__BROWSER_IE8_OR_LESS ? "visible" : "hidden") + ";color:" + theObject.FGColours[__STATE_DEFAULT] + ";";
+	button.style.cssText = "position:absolute;background-color:transparent;padding:0px;margin:0px;cursor:default;text-overflow:ellipsis;overflow:" + (__BROWSER_IE8_OR_LESS ? "visible" : "hidden") + ";color:" + theObject.FGColours[__STATE_DEFAULT] + ";";
 	//make it unselectable
 	Browser_SetSelectable(button, false);
 
@@ -56579,6 +56560,8 @@ function UltraGrid_AppendChild(childHTML, bSkipFixed)
 			///
 			//we need to create it first
 			///
+			//update its interface look
+			cell.UpdateInterfaceLook();
 			//set its panel
 			cell.Parent.HTMLParent = cell.Row.PanelRows[cell.Panel.Id];
 			//create it
@@ -56817,20 +56800,11 @@ function UltraGrid_InitialiseHeaders(theObject)
 			}
 		}
 		//run the interface look now that we have all of our properties
-		newHeader.UpdateCSSStyleProperty();
 		newHeader.UpdateInterfaceLook();
 		//correct the designer class
 		newHeader.DataObject.ClassDesigner = Get_ClassString(newHeader.DataObject.Class);
 		//Build header rect
-		//invalid?
-		if (newHeader.StyleProperties)
-		{
-			newHeader.Rect = new Position_Rect(newHeader.StyleProperties.Rect.left, newHeader.StyleProperties.Rect.top, newHeader.StyleProperties.Rect.width, newHeader.StyleProperties.Rect.height);
-		}
-		else
-		{
-			newHeader.Rect = new Position_Rect(Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_LEFT], 0), Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_TOP], 0), Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_WIDTH], 0), Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_HEIGHT], 0));
-		}
+		newHeader.Rect = new Position_Rect(Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_LEFT], 0), Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_TOP], 0), Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_WIDTH], 0), Get_Number(newHeader.Properties[__NEMESIS_PROPERTY_HEIGHT], 0));
 		//return newHeader
 		return newHeader;
 	}
@@ -56916,7 +56890,6 @@ function UltraGrid_InitialiseCells(theObject)
 			}
 		}
 		//run the interface look now that we have all of our properties
-		newCell.UpdateCSSStyleProperty();
 		newCell.UpdateInterfaceLook();
 		//set special methods
 		newCell.SetSelected = UltraGrid_Cell_SetSelected;
@@ -57130,15 +57103,8 @@ function UltraGrid_InitialiseCells(theObject)
 				{
 					//get the cell
 					var newCell = cells[iCell];
-					//invalid?
-					if (newCell.StyleProperties)
-					{
-						newCell.Rect = new Position_Rect(newCell.StyleProperties.Rect.left, newCell.StyleProperties.Rect.top, newCell.StyleProperties.Rect.width, newCell.StyleProperties.Rect.height);
-					}
-					else
-					{
-						newCell.Rect = new Position_Rect(Get_Number(newCell.Properties[__NEMESIS_PROPERTY_LEFT], 0), Get_Number(newCell.Properties[__NEMESIS_PROPERTY_TOP], 0), Get_Number(newCell.Properties[__NEMESIS_PROPERTY_WIDTH], 0), Get_Number(newCell.Properties[__NEMESIS_PROPERTY_HEIGHT], 0));
-					}
+					//Build cell rect
+					newCell.Rect = new Position_Rect(Get_Number(newCell.Properties[__NEMESIS_PROPERTY_LEFT], 0), Get_Number(newCell.Properties[__NEMESIS_PROPERTY_TOP], 0), Get_Number(newCell.Properties[__NEMESIS_PROPERTY_WIDTH], 0), Get_Number(newCell.Properties[__NEMESIS_PROPERTY_HEIGHT], 0));
 					//update row size
 					newRow.Height = Math.max(newRow.Height, newCell.Rect.bottom);
 					newRow.Width = Math.max(newRow.Width, newCell.Rect.right);
@@ -57957,6 +57923,8 @@ function UltraGrid_Paint(theObject)
 			//has this been created? has a valid panel?
 			if (!header.HTML && header.Panel)
 			{
+				//update its interface look
+				header.UpdateInterfaceLook();
 				//set its panel
 				header.Parent.HTMLParent = header.Panel.HTML;
 				//create it
@@ -58392,8 +58360,7 @@ function UltraGrid_BuildSpacers(theObject)
 				panel.VerticalSpacer = panel.HTML.appendChild(spacer);
 			}
 			//set initial size
-			spacer.Size = panel.HTML.scrollHeight;
-			var scrollModifier = panel.HTML.offsetHeight - panel.HTML.clientHeight;
+			spacer.Size = panel.HTML.scrollHeight + panel.HTML.offsetHeight - panel.HTML.clientHeight;
 			///
 			//First determine the size of the spacer
 			///
@@ -58437,8 +58404,8 @@ function UltraGrid_BuildSpacers(theObject)
 						syncPanel.VerticalSpacer = syncPanel.HTML.appendChild(syncSpacer);
 					}
 					//update its size
-					syncSpacer.Size = spacer.Size + scrollModifier;
-					syncSpacer.style.height = syncSpacer.Size + scrollModifier + "px";
+					syncSpacer.Size = spacer.Size;
+					syncSpacer.style.height = syncSpacer.Size + "px";
 				}
 			}
 		}
@@ -58460,8 +58427,7 @@ function UltraGrid_BuildSpacers(theObject)
 				panel.HorizontalSpacer = panel.HTML.appendChild(spacer);
 			}
 			//set initial size
-			spacer.Size = panel.HTML.scrollWidth;
-			var scrollModifier = panel.HTML.offsetWidth - panel.HTML.clientWidth;
+			spacer.Size = panel.HTML.scrollWidth + panel.HTML.offsetWidth - panel.HTML.clientWidth;
 			///
 			//First determine the size of the spacer
 			///
@@ -58505,8 +58471,8 @@ function UltraGrid_BuildSpacers(theObject)
 						syncPanel.HorizontalSpacer = syncPanel.HTML.appendChild(syncSpacer);
 					}
 					//update its size
-					syncSpacer.Size = spacer.Size + scrollModifier;
-					syncSpacer.style.width = syncSpacer.Size + scrollModifier + "px";
+					syncSpacer.Size = spacer.Size;
+					syncSpacer.style.width = syncSpacer.Size + "px";
 				}
 			}
 		}
@@ -58805,6 +58771,8 @@ function UltraGrid_Paint_Refresh(theObject)
 							//has this been created?
 							if (!cell.HTML)
 							{
+								//update its interface look
+								cell.UpdateInterfaceLook();
 								//set its panel
 								cell.Parent.HTMLParent = row.PanelRows[panelId];
 								//create it
