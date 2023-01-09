@@ -18,7 +18,7 @@
   <organizations default="assima_courses">
     <organization identifier="assima_courses" >
 		  <title><![CDATA[QoreStor - Evaluation]]></title>
-        <item identifier="item397" identifierref="item_resource_397" isvisible="true">
+        <item identifier="item399" identifierref="item_resource_399" isvisible="true">
                         <title><![CDATA[QoreStor - Evaluation]]></title>
                         <metadata>
                           <lom xmlns="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ltsc.ieee.org/xsd/LOM lom.xsd">
@@ -40,7 +40,7 @@
     </organization>
   </organizations>
   <resources>
-    <resource identifier="item_resource_397" type="webcontent" adlcp:scormType="sco" href="index.htm">
+    <resource identifier="item_resource_399" type="webcontent" adlcp:scormType="sco" href="index.htm">
                            <file href="index.htm"/>
                          </resource>
 
